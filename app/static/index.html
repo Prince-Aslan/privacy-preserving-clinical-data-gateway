@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy-Preserving Clinical Data Gateway | NDPA 2023 Compliant</title>
+    <link rel="stylesheet" href="styles.css?v=1.0.1">
+    <!-- Chart.js for Metabase Analytical Serving Visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <!-- -------------------------------------------------------------------
+         Login Overlay Modal
+    -------------------------------------------------------------------- -->
+    <div id="login-modal" class="modal-overlay">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="logo-badge">CP</div>
+                <h2>Clinical Data Gateway</h2>
+                <p>NDPA 2023 Compliant Mental Health System</p>
+            </div>
+
+            <div class="preset-users-container">
+                <div class="preset-users-title">Quick Select Predefined Account:</div>
+                <div class="preset-grid">
+                    <button class="preset-chip" onclick="quickLogin('admin_user', 'AdminPass2026!')">
+                        <div class="preset-name">Administrator</div>
+                        <div class="preset-role">admin_user</div>
+                    </button>
+                    <button class="preset-chip" onclick="quickLogin('dr_okonkwo', 'DoctorPass2026!')">
+                        <div class="preset-name">Clinician</div>
+                        <div class="preset-role">dr_okonkwo</div>
+                    </button>
+                    <button class="preset-chip" onclick="quickLogin('researcher_ade', 'ResearchPass2026!')">
+                        <div class="preset-name">Researcher</div>
+                        <div class="preset-role">researcher_ade</div>
+                    </button>
+                    <button class="preset-chip" onclick="quickLogin('officer_bello', 'OfficerPass2026!')">
+                        <div class="preset-name">Data Officer</div>
+                        <div class="preset-role">officer_bello</div>
+                    </button>
+                </div>
+            </div>
+
+            <form id="login-form" onsubmit="handleLoginSubmit(event)">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label for="login-username">Username</label>
+                    <input type="text" id="login-username" placeholder="e.g. admin_user" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" placeholder="••••••••••••" required>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%;">Authenticate & Access Gateway</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- -------------------------------------------------------------------
+         Application Header & Navigation
+    -------------------------------------------------------------------- -->
+    <header>
+        <div class="navbar">
+            <a href="#" class="brand">
+                <div class="brand-icon">CP</div>
+                <div class="brand-text">
+                    <h1>Clinical Privacy Data Gateway</h1>
+                    <p>MIVA Open University | MIT Research</p>
+                </div>
+            </a>
+
+            <div class="user-nav-status">
+                <div class="user-badge">
+                    <span id="user-display-name">Not Authenticated</span>
+                    <span id="user-role-badge" class="role-pill">GUEST</span>
+                </div>
+                <button class="btn-logout" onclick="logout()">Sign Out</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="nav-tabs-wrapper">
+        <div class="nav-tabs">
+            <button class="tab-btn active" id="tab-overview-btn" onclick="switchTab('overview')">
+                Executive Overview & Metabase
+            </button>
+            <button class="tab-btn" id="tab-ingest-btn" onclick="switchTab('ingest')">
+                Clinical Record Ingest
+            </button>
+            <button class="tab-btn" id="tab-analytics-btn" onclick="switchTab('analytics')">
+                Scrubbed Analytics Vault
+            </button>
+            <button class="tab-btn" id="tab-vault-btn" onclick="switchTab('vault')">
+                Restricted Raw Vault
+            </button>
+            <button class="tab-btn" id="tab-audit-btn" onclick="switchTab('audit')">
+                Compliance Audit Logs
+            </button>
+        </div>
+    </div>
+
+    <!-- -------------------------------------------------------------------
+         Main Dashboard Content Area
+    -------------------------------------------------------------------- -->
+    <main>
+
+        <!-- ---------------------------------------------------------------
+             TAB 1: Executive Overview & Metabase Analytical Serving Layer
+        ---------------------------------------------------------------- -->
+        <section id="tab-overview" class="tab-content active">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Total Ingested Records</div>
+                    <div class="metric-value" id="metric-total-records">0</div>
+                    <div class="metric-sub">Dual-Database Synchronized</div>
+                </div>
+                <div class="metric-card accent-emerald">
+                    <div class="metric-label">PII Redaction Accuracy</div>
+                    <div class="metric-value">100.0%</div>
+                    <div class="metric-sub">spaCy NER + AES-256-GCM</div>
+                </div>
+                <div class="metric-card accent-purple">
+                    <div class="metric-label">Average PHQ-9 Score</div>
+                    <div class="metric-value" id="metric-avg-phq9">0.0</div>
+                    <div class="metric-sub">Longitudinal Mental Health Metric</div>
+                </div>
+                <div class="metric-card accent-amber">
+                    <div class="metric-label">Database Mode</div>
+                    <div class="metric-value" id="metric-db-mode">ClickHouse</div>
+                    <div class="metric-sub">NDPA 2023 Compliant Engine</div>
+                </div>
+            </div>
+
+            <!-- Metabase Analytics Serving Layer Integration -->
+            <div class="glass-card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Metabase Analytical Serving Layer</div>
+                        <div class="card-subtitle">De-Identified Aggregate Analytics & Cohort Visualizations</div>
+                    </div>
+                    <div class="status-chip status-success">
+                        <span>●</span> Serving Layer Connected
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem;">
+                    <div style="background: rgba(15, 23, 42, 0.6); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                        <h4 style="margin-bottom: 0.75rem; font-size: 0.9rem; color: var(--text-muted);">PHQ-9 Symptom Severity Cohorts</h4>
+                        <canvas id="phq9Chart" height="200"></canvas>
+                    </div>
+                    <div style="background: rgba(15, 23, 42, 0.6); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                        <h4 style="margin-bottom: 0.75rem; font-size: 0.9rem; color: var(--text-muted);">Diagnostic Distribution Breakdown</h4>
+                        <canvas id="diagnosisChart" height="200"></canvas>
+                    </div>
+                </div>
+
+                <div class="metabase-wrapper" style="margin-top: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h4 style="font-size: 0.95rem; color: var(--text-main);">Metabase BI Engine Embed (`http://localhost:3000`)</h4>
+                        <a href="http://localhost:3000" target="_blank" class="btn-secondary" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;">Open Metabase Console ↗</a>
+                    </div>
+                    <div class="metabase-placeholder">
+                        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                            Direct Columnar Query Engine Connected to <code class="font-mono">ANALYTICS_SCRUBBED</code>
+                        </p>
+                        <p style="font-size: 0.8rem; color: var(--text-dim);">
+                            Researchers can execute aggregate SQL queries, cross-tabulations, and disease surveillance models without access to raw PII.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ---------------------------------------------------------------
+             TAB 2: Clinical Data Ingestion Portal
+        ---------------------------------------------------------------- -->
+        <section id="tab-ingest" class="tab-content">
+            <div class="glass-card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Clinical Record Ingestion Gateway</div>
+                        <div class="card-subtitle">AES-256 Field Encryption + SHA-256 Pseudonymization + spaCy PHI Redaction</div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <select id="seed-count-select" style="padding: 0.4rem 0.6rem; font-size: 0.85rem;">
+                            <option value="50">50 Patients (~100 Visit Records)</option>
+                            <option value="500">500 Patients (~1,000 Visit Records)</option>
+                            <option value="1000">1,000 Patients (~2,000 Visit Records)</option>
+                            <option value="10000">10,000 Patients (~20,000 Visit Records)</option>
+                            <option value="100000">100,000 Patients (~200,000 Visit Records)</option>
+                        </select>
+                        <button class="btn-secondary" onclick="triggerSyntheticSeed()">
+                            Seed Records
+                        </button>
+                    </div>
+                </div>
+
+
+                <form id="ingest-form" onsubmit="handleIngestSubmit(event)" style="margin-top: 1rem;">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="ingest-patient-id">Patient Identifier (Original)</label>
+                            <input type="text" id="ingest-patient-id" value="SYN-892-K" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="ingest-patient-name">Patient Direct Name (PII)</label>
+                            <input type="text" id="ingest-patient-name" value="Chidi Okonkwo" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="ingest-contact">Contact Phone Number (PII)</label>
+                            <input type="text" id="ingest-contact" value="+234-803-456-7890" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="ingest-age">Patient Age</label>
+                            <input type="number" id="ingest-age" value="32" min="18" max="100" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="ingest-gender">Gender</label>
+                            <select id="ingest-gender" required>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="ingest-location">Location / Facility</label>
+                            <input type="text" id="ingest-location" value="Yaba, Lagos, Nigeria" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="ingest-phq9">PHQ-9 Score (0 - 27)</label>
+                            <input type="number" id="ingest-phq9" value="18" min="0" max="27" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="ingest-diagnosis">Diagnosis Classification</label>
+                            <select id="ingest-diagnosis" required>
+                                <option value="Major Depressive Disorder (Severe)">Major Depressive Disorder (Severe)</option>
+                                <option value="Major Depressive Disorder (Moderate)">Major Depressive Disorder (Moderate)</option>
+                                <option value="Generalized Anxiety Disorder">Generalized Anxiety Disorder</option>
+                                <option value="Post-Traumatic Stress Disorder">Post-Traumatic Stress Disorder</option>
+                            </select>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="ingest-notes">Free-Text Clinical Notes (Contains PHI to be Redacted)</label>
+                            <textarea id="ingest-notes" rows="3" required>Patient Chidi Okonkwo visited clinic in Yaba, Lagos complaining of severe depression and sleep problems. Contact phone: +234-803-456-7890.</textarea>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1.5rem; text-align: right;">
+                        <button type="submit" class="btn-primary">Ingest & Privacy-Process Record</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- ---------------------------------------------------------------
+             TAB 3: De-identified Analytics Repository (`ANALYTICS_SCRUBBED`)
+        ---------------------------------------------------------------- -->
+        <section id="tab-analytics" class="tab-content">
+            <div class="glass-card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">De-Identified Analytics Repository (<code class="font-mono">ANALYTICS_SCRUBBED</code>)</div>
+                        <div class="card-subtitle">Restricted Table for Aggregate Research & Disease Surveillance</div>
+                    </div>
+                    <button class="btn-secondary" onclick="loadAnalyticsData()">Refresh Repository</button>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Pseudonym Hash (SHA-256)</th>
+                                <th>Age / Gender</th>
+                                <th>Location</th>
+                                <th>PHQ-9</th>
+                                <th>Diagnosis</th>
+                                <th>Scrubbed Clinical Notes (PHI Redacted)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="analytics-table-body">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                                    Loading scrubbed analytics records...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ---------------------------------------------------------------
+             TAB 4: Restricted Raw Vault (`RAW_VAULT`)
+        ---------------------------------------------------------------- -->
+        <section id="tab-vault" class="tab-content">
+            <div class="glass-card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Restricted Raw Vault (<code class="font-mono">RAW_VAULT</code>)</div>
+                        <div class="card-subtitle">Encrypted Source of Truth (Restricted to Admin & Data Protection Officers)</div>
+                    </div>
+                    <button class="btn-secondary" onclick="loadVaultData()">Refresh Vault</button>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Pseudonym ID</th>
+                                <th>Encrypted Full Name (AES-256)</th>
+                                <th>Encrypted Contact (AES-256)</th>
+                                <th>Demographics</th>
+                                <th>PHQ-9</th>
+                                <th>Diagnosis</th>
+                                <th>Raw Clinical Narrative</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vault-table-body">
+                            <tr>
+                                <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                                    Loading raw vault records...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ---------------------------------------------------------------
+             TAB 5: Compliance Audit Trail Logs
+        ---------------------------------------------------------------- -->
+        <section id="tab-audit" class="tab-content">
+            <div class="glass-card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Tamper-Evident Compliance Audit Trail</div>
+                        <div class="card-subtitle">NDPA 2023 Mandatory Audit Log for All Access, Queries & Ingestions</div>
+                    </div>
+                    <button class="btn-secondary" onclick="loadAuditData()">Refresh Audit Trail</button>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>User ID / Role</th>
+                                <th>Action Type</th>
+                                <th>Target Table</th>
+                                <th>Query / Execution Details</th>
+                                <th>Latency</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="audit-table-body">
+                            <tr>
+                                <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                                    Loading audit logs...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Application Interactivity Script -->
+    <script src="app.js?v=1.0.1"></script>
+</body>
+</html>
+
